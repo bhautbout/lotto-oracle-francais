@@ -1,6 +1,8 @@
 
 import { LotoDraw, LotoStats, LotoPrediction } from "@/types/loto";
 import { v4 as uuidv4 } from "uuid";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 // Fonction pour parser un fichier CSV
 export const parseCSV = (csv: string): LotoDraw[] => {
@@ -15,12 +17,21 @@ export const parseCSV = (csv: string): LotoDraw[] => {
     const numbers = parts.slice(1, 6).map(num => parseInt(num.trim()));
     const specialNumber = parseInt(parts[6].trim());
     
-    const dateObj = new Date(date);
+    // Convertir la date au format français (JJ/MM/AAAA) en format ISO (AAAA-MM-JJ)
+    const dateParts = date.split('/');
+    let isoDate = date;
+    
+    if (dateParts.length === 3) {
+      // Si le format est JJ/MM/AAAA, convertir en AAAA-MM-JJ
+      isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+    }
+    
+    const dateObj = new Date(isoDate);
     const day = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
     
     return {
       id: uuidv4(),
-      date,
+      date: isoDate, // Stocker en format ISO
       numbers,
       specialNumber,
       day
@@ -185,10 +196,18 @@ export const validateLotoNumbers = (numbers: number[], specialNumber: number): b
 
 // Formatage de la date pour l'affichage
 export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
+  try {
+    const date = new Date(dateString);
+    
+    // Vérifier si la date est valide
+    if (isNaN(date.getTime())) {
+      throw new Error('Date invalide');
+    }
+    
+    return format(date, 'dd/MM/yyyy', { locale: fr });
+  } catch (error) {
+    console.error("Erreur de formatage de date:", error, "pour la chaîne:", dateString);
+    return "Date invalide";
+  }
 };
+

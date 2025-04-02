@@ -12,7 +12,7 @@ import LotoBall from "./LotoBall";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { fr } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ interface DrawFormProps {
 }
 
 const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
-  const [date, setDate] = useState<Date | undefined>(initialData?.date ? new Date(initialData.date) : undefined);
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [numbers, setNumbers] = useState<number[]>(initialData?.numbers || []);
   const [specialNumber, setSpecialNumber] = useState<number>(initialData?.specialNumber || 0);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,17 @@ const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
   useEffect(() => {
     // Si initialData change, mettre à jour le formulaire
     if (initialData) {
-      setDate(initialData.date ? new Date(initialData.date) : undefined);
+      if (initialData.date) {
+        try {
+          // Convertir depuis le format ISO stocké
+          const parsedDate = new Date(initialData.date);
+          if (!isNaN(parsedDate.getTime())) {
+            setDate(parsedDate);
+          }
+        } catch (e) {
+          console.error("Erreur lors de la conversion de la date:", e);
+        }
+      }
       setNumbers(initialData.numbers);
       setSpecialNumber(initialData.specialNumber);
     }

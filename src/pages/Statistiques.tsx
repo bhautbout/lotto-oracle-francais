@@ -52,6 +52,10 @@ const Statistiques = () => {
     .map(([num, freq]) => ({ num: parseInt(num), freq }))
     .sort((a, b) => b.freq - a.freq)[0]?.num;
   
+  // Premier et dernier tirage
+  const firstDraw = draws.length > 0 ? draws[draws.length - 1] : null;
+  const lastDraw = draws.length > 0 ? draws[0] : null;
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-loto-blue">Statistiques</h1>
@@ -77,14 +81,14 @@ const Statistiques = () => {
                 <div>
                   <p className="text-sm text-gray-500">Premier tirage</p>
                   <p className="font-medium">
-                    {formatDate(draws[draws.length - 1]?.date)}
+                    {firstDraw ? formatDate(firstDraw.date) : "-"}
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-500">Dernier tirage</p>
                   <p className="font-medium">
-                    {formatDate(draws[0]?.date)}
+                    {lastDraw ? formatDate(lastDraw.date) : "-"}
                   </p>
                 </div>
               </div>

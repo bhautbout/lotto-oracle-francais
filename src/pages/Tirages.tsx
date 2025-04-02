@@ -49,7 +49,14 @@ const Tirages = () => {
   
   // Filtrer les tirages en fonction du terme de recherche
   const filteredDraws = draws.filter(draw => {
-    const dateString = formatDate(draw.date);
+    // Assurer que la date est valide avant de la formatter
+    let dateString = "";
+    try {
+      dateString = formatDate(draw.date);
+    } catch (error) {
+      console.error("Erreur lors du formatage de la date:", error);
+    }
+    
     const numbersString = [...draw.numbers, draw.specialNumber].join(' ');
     const searchLower = searchTerm.toLowerCase();
     

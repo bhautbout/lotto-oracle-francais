@@ -13,13 +13,16 @@ interface DrawItemProps {
 }
 
 const DrawItem = ({ draw, onEdit, onDelete }: DrawItemProps) => {
+  // Assurer que la date est affichée correctement
+  const displayDate = draw.date ? formatDate(draw.date) : "Date inconnue";
+  
   return (
     <Card className="w-full hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex flex-col">
             <div className="text-lg font-medium mb-2">
-              Tirage du {formatDate(draw.date)}
+              Tirage du {displayDate}
             </div>
             {draw.day && (
               <div className="text-sm text-gray-500 mb-2">{draw.day}</div>
