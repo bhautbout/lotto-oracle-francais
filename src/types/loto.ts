@@ -19,4 +19,5 @@ export interface LotoPrediction {
   specialNumber: number;
   confidence: number;
   method: string;
+  status?: "pending" | "verified" | "matched";
 }
