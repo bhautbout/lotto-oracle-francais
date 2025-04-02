@@ -5,6 +5,11 @@ import { calculateStats, predictBasedOnStats, predictAI, parseCSV } from "@/lib/
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+// Define types based on Database type
+type DrawsRow = Database['public']['Tables']['draws']['Row'];
+type PredictionsRow = Database['public']['Tables']['predictions']['Row'];
 
 export const useLotoData = () => {
   const [draws, setDraws] = useState<LotoDraw[]>([]);
@@ -76,7 +81,7 @@ export const useLotoData = () => {
       if (error) throw error;
 
       // Convertir les données de Supabase au format LotoDraw
-      const formattedDraws: LotoDraw[] = data.map(draw => ({
+      const formattedDraws: LotoDraw[] = data.map((draw: DrawsRow) => ({
         id: draw.id,
         date: draw.date,
         day: draw.day || undefined,
@@ -108,7 +113,7 @@ export const useLotoData = () => {
       if (error) throw error;
 
       // Convertir les données de Supabase au format LotoPrediction
-      const formattedPredictions: LotoPrediction[] = data.map(prediction => ({
+      const formattedPredictions: LotoPrediction[] = data.map((prediction: PredictionsRow) => ({
         numbers: prediction.numbers,
         specialNumber: prediction.special_number,
         confidence: Number(prediction.confidence),
