@@ -6,6 +6,7 @@ import LotoBall from "@/components/LotoBall";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatDate } from "@/lib/loto-utils";
 
 const Statistiques = () => {
   const { draws, stats } = useLotoData();
@@ -76,14 +77,14 @@ const Statistiques = () => {
                 <div>
                   <p className="text-sm text-gray-500">Premier tirage</p>
                   <p className="font-medium">
-                    {new Date(draws[draws.length - 1]?.date).toLocaleDateString('fr-FR')}
+                    {formatDate(draws[draws.length - 1]?.date)}
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-500">Dernier tirage</p>
                   <p className="font-medium">
-                    {new Date(draws[0]?.date).toLocaleDateString('fr-FR')}
+                    {formatDate(draws[0]?.date)}
                   </p>
                 </div>
               </div>

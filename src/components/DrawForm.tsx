@@ -9,6 +9,12 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { validateLotoNumbers } from "@/lib/loto-utils";
 import LotoBall from "./LotoBall";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from 'date-fns/locale';
+import { cn } from "@/lib/utils";
 
 interface DrawFormProps {
   onSubmit: (draw: Omit<LotoDraw, "id">) => void;
@@ -17,7 +23,7 @@ interface DrawFormProps {
 }
 
 const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
-  const [date, setDate] = useState(initialData?.date || "");
+  const [date, setDate] = useState<Date | undefined>(initialData?.date ? new Date(initialData.date) : undefined);
   const [numbers, setNumbers] = useState<number[]>(initialData?.numbers || []);
   const [specialNumber, setSpecialNumber] = useState<number>(initialData?.specialNumber || 0);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +31,7 @@ const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
   useEffect(() => {
     // Si initialData change, mettre à jour le formulaire
     if (initialData) {
-      setDate(initialData.date);
+      setDate(initialData.date ? new Date(initialData.date) : undefined);
       setNumbers(initialData.numbers);
       setSpecialNumber(initialData.specialNumber);
     }
@@ -47,11 +53,11 @@ const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
     }
     
     // Créer l'objet de tirage
-    const dateObj = new Date(date);
-    const day = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
+    const day = date.toLocaleDateString('fr-FR', { weekday: 'long' });
+    const formattedDate = format(date, 'yyyy-MM-dd'); // Format ISO pour le stockage
     
     onSubmit({
-      date,
+      date: formattedDate,
       numbers,
       specialNumber,
       day
@@ -120,18 +126,35 @@ const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="date">Date du tirage</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, 'dd/MM/yyyy', { locale: fr }) : <span>Sélectionner une date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                  locale={fr}
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           
           <div className="space-y-4">
             <Label>Sélectionnez 5 numéros (1-49)</Label>
-            <div className="number-table">
+            <div className="number-table grid grid-cols-7 gap-2">
               {renderNumberGrid()}
             </div>
           </div>

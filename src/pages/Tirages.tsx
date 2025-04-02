@@ -8,6 +8,7 @@ import DrawItem from "@/components/DrawItem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
+import { formatDate } from "@/lib/loto-utils";
 
 const Tirages = () => {
   const { draws, isLoading, importCSV, addDraw, updateDraw, deleteDraw } = useLotoData();
@@ -48,7 +49,7 @@ const Tirages = () => {
   
   // Filtrer les tirages en fonction du terme de recherche
   const filteredDraws = draws.filter(draw => {
-    const dateString = new Date(draw.date).toLocaleDateString('fr-FR');
+    const dateString = formatDate(draw.date);
     const numbersString = [...draw.numbers, draw.specialNumber].join(' ');
     const searchLower = searchTerm.toLowerCase();
     
