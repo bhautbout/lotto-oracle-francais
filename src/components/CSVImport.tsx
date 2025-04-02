@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileUp, AlertCircle, Info } from "lucide-react";
+import { FileUp, AlertCircle, Info, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CSVImportProps {
@@ -75,10 +75,17 @@ const CSVImport = ({ onImport, isLoading }: CSVImportProps) => {
             className="hidden"
           />
           
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 w-full text-center hover:border-primary cursor-pointer mb-4" onClick={handleClick}>
-            <FileUp className="mx-auto h-12 w-12 text-gray-400" />
+          <div 
+            className={`border-2 border-dashed ${isLoading ? 'border-gray-200 opacity-50' : 'border-gray-300 hover:border-primary'} rounded-lg p-6 w-full text-center cursor-pointer mb-4`} 
+            onClick={isLoading ? undefined : handleClick}
+          >
+            {isLoading ? (
+              <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
+            ) : (
+              <FileUp className="mx-auto h-12 w-12 text-gray-400" />
+            )}
             <p className="mt-2 text-sm text-gray-600">
-              Cliquez pour sélectionner un fichier CSV
+              {isLoading ? 'Importation en cours...' : 'Cliquez pour sélectionner un fichier CSV'}
             </p>
             <p className="mt-1 text-xs text-gray-500">
               Format attendu: date;numéro1;numéro2;numéro3;numéro4;numéro5;numéroChance
@@ -103,7 +110,14 @@ const CSVImport = ({ onImport, isLoading }: CSVImportProps) => {
           )}
           
           <Button onClick={handleClick} disabled={isLoading} className="w-full">
-            {isLoading ? "Importation en cours..." : "Importer des tirages"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Importation en cours...
+              </>
+            ) : (
+              "Importer des tirages"
+            )}
           </Button>
         </div>
       </CardContent>
