@@ -73,15 +73,44 @@ export const useLotoData = () => {
   const fetchDraws = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      // Modification ici pour récupérer tous les tirages
+      let { count } = await supabase
         .from('draws')
-        .select('*')
-        .order('date', { ascending: false });
-
-      if (error) throw error;
+        .select('*', { count: 'exact' });
+        
+      console.log(`Nombre total de tirages: ${count}`);
+      
+      // Utiliser la pagination pour récupérer tous les tirages
+      let allDraws: DrawsRow[] = [];
+      const pageSize = 1000; // Taille maximale recommandée par requête
+      let page = 0;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('draws')
+          .select('*')
+          .range(page * pageSize, (page + 1) * pageSize - 1)
+          .order('date', { ascending: false });
+        
+        if (error) {
+          console.error("Erreur lors de la récupération des tirages:", error);
+          throw error;
+        }
+        
+        if (data.length === 0) {
+          hasMore = false;
+        } else {
+          allDraws = [...allDraws, ...data as DrawsRow[]];
+          page++;
+        }
+      }
+      
+      console.log(`Tirages récupérés: ${allDraws.length}`);
 
       // Convertir les données de Supabase au format LotoDraw
-      const formattedDraws: LotoDraw[] = data.map((draw: DrawsRow) => ({
+      const formattedDraws: LotoDraw[] = allDraws.map((draw: DrawsRow) => ({
         id: draw.id,
         date: draw.date,
         day: draw.day || undefined,
@@ -142,33 +171,72 @@ export const useLotoData = () => {
         throw new Error("Aucune donnée n'a pu être importée");
       }
       
-      // Insérer les tirages dans Supabase
+      console.log(`Nombre de tirages à importer: ${parsedDraws.length}`);
+      
+      // Optimisation: insérer les tirages par lots pour éviter les limitations
+      const batchSize = 500; // Taille de lot recommandée
+      const batches = [];
+      
+      for (let i = 0; i < parsedDraws.length; i += batchSize) {
+        batches.push(parsedDraws.slice(i, i + batchSize));
+      }
+      
+      console.log(`Nombre de lots à traiter: ${batches.length}`);
+      
+      let successCount = 0;
+      let errorCount = 0;
+      
+      // Traiter les lots séquentiellement
       Promise.all(
-        parsedDraws.map(async (draw) => {
-          const { error } = await supabase
-            .from('draws')
-            .insert({
-              date: draw.date,
-              day: draw.day,
-              numbers: draw.numbers,
-              special_number: draw.specialNumber
-            });
-          
-          if (error) throw error;
+        batches.map(async (batch, index) => {
+          try {
+            console.log(`Traitement du lot ${index + 1}/${batches.length} (${batch.length} tirages)`);
+            
+            const { data, error } = await supabase
+              .from('draws')
+              .insert(
+                batch.map(draw => ({
+                  date: draw.date,
+                  day: draw.day,
+                  numbers: draw.numbers,
+                  special_number: draw.specialNumber
+                }))
+              );
+              
+            if (error) {
+              console.error(`Erreur lot ${index + 1}:`, error);
+              errorCount += batch.length;
+              return;
+            }
+            
+            successCount += batch.length;
+            console.log(`Lot ${index + 1} traité avec succès`);
+          } catch (error) {
+            console.error(`Exception lot ${index + 1}:`, error);
+            errorCount += batch.length;
+          }
         })
       )
       .then(() => {
-        toast({
-          title: "Importation réussie",
-          description: `${parsedDraws.length} tirages ont été importés.`,
-        });
-        fetchDraws();
+        if (successCount > 0) {
+          toast({
+            title: "Importation réussie",
+            description: `${successCount} tirages ont été importés${errorCount > 0 ? ` (${errorCount} échecs)` : ''}.`,
+          });
+        } else {
+          toast({
+            title: "Échec de l'importation",
+            description: "Aucun tirage n'a pu être importé.",
+            variant: "destructive",
+          });
+        }
+        fetchDraws(); // Rafraîchir la liste
       })
       .catch((error) => {
-        console.error("Erreur lors de l'insertion des tirages:", error);
+        console.error("Erreur lors de l'importation:", error);
         toast({
           title: "Erreur d'importation",
-          description: "Une erreur est survenue lors de l'enregistrement des tirages",
+          description: "Une erreur est survenue lors de l'importation",
           variant: "destructive",
         });
       })
@@ -176,7 +244,7 @@ export const useLotoData = () => {
         setIsLoading(false);
       });
     } catch (error) {
-      console.error("Erreur d'importation:", error);
+      console.error("Erreur d'analyse du CSV:", error);
       toast({
         title: "Erreur d'importation",
         description: error instanceof Error ? error.message : "Format de fichier invalide",

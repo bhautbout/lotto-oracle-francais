@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileUp, AlertCircle } from "lucide-react";
+import { FileUp, AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CSVImportProps {
@@ -13,6 +13,7 @@ interface CSVImportProps {
 const CSVImport = ({ onImport, isLoading }: CSVImportProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fileInfo, setFileInfo] = useState<{ name: string, size: string } | null>(null);
 
   const handleClick = () => {
     if (fileInputRef.current) {
@@ -22,6 +23,7 @@ const CSVImport = ({ onImport, isLoading }: CSVImportProps) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
+    setFileInfo(null);
     const file = e.target.files?.[0];
     
     if (!file) return;
@@ -31,10 +33,20 @@ const CSVImport = ({ onImport, isLoading }: CSVImportProps) => {
       return;
     }
     
+    // Afficher des informations sur le fichier
+    setFileInfo({
+      name: file.name,
+      size: (file.size / 1024 / 1024).toFixed(2) + " MB"
+    });
+    
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
-        onImport(event.target.result as string);
+        const content = event.target.result as string;
+        // Estimer le nombre de lignes (tirages)
+        const lines = content.split('\n').length - 1; // -1 pour l'en-tête
+        console.log(`Fichier CSV contient environ ${lines} lignes`);
+        onImport(content);
       }
     };
     reader.onerror = () => {
@@ -72,6 +84,16 @@ const CSVImport = ({ onImport, isLoading }: CSVImportProps) => {
               Format attendu: date;numéro1;numéro2;numéro3;numéro4;numéro5;numéroChance
             </p>
           </div>
+          
+          {fileInfo && (
+            <Alert className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Fichier: {fileInfo.name} ({fileInfo.size})<br/>
+                L'importation se fait par lots de 500 tirages maximum.
+              </AlertDescription>
+            </Alert>
+          )}
           
           {error && (
             <Alert variant="destructive" className="mb-4">
