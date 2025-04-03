@@ -129,12 +129,30 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     }
     
     // Supprimer d'abord toutes les prédictions existantes avant d'en ajouter de nouvelles
-    supabase
-      .from('predictions')
-      .delete()
-      .then(() => {
-        // Sauvegarder les nouvelles prédictions dans Supabase
-        Promise.all(
+    const deleteExistingPredictions = async () => {
+      try {
+        const { error } = await supabase
+          .from('predictions')
+          .delete();
+        
+        if (error) throw error;
+        
+        // Sauvegarder les nouvelles prédictions après la suppression
+        await savePredictions();
+      } catch (error) {
+        console.error("Erreur lors de la suppression des anciennes prédictions:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer les anciennes prédictions",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    // Fonction pour sauvegarder les nouvelles prédictions
+    const savePredictions = async () => {
+      try {
+        await Promise.all(
           newPredictions.map(async (prediction) => {
             const { error } = await supabase
               .from('predictions')
@@ -148,31 +166,25 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
             
             if (error) throw error;
           })
-        )
-        .then(() => {
-          toast({
-            title: "Prédictions générées",
-            description: `${count} combinaison${count > 1 ? 's ont' : ' a'} été générée${count > 1 ? 's' : ''} avec diverses méthodes d'IA.`,
-          });
-          fetchPredictions();
-        })
-        .catch((error) => {
-          console.error("Erreur lors de l'enregistrement des prédictions:", error);
-          toast({
-            title: "Erreur",
-            description: "Impossible d'enregistrer les prédictions",
-            variant: "destructive",
-          });
+        );
+        
+        toast({
+          title: "Prédictions générées",
+          description: `${count} combinaison${count > 1 ? 's ont' : ' a'} été générée${count > 1 ? 's' : ''} avec diverses méthodes d'IA.`,
         });
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la suppression des anciennes prédictions:", error);
+        fetchPredictions();
+      } catch (error) {
+        console.error("Erreur lors de l'enregistrement des prédictions:", error);
         toast({
           title: "Erreur",
-          description: "Impossible de supprimer les anciennes prédictions",
+          description: "Impossible d'enregistrer les prédictions",
           variant: "destructive",
         });
-      });
+      }
+    };
+    
+    // Démarrer le processus de génération
+    deleteExistingPredictions();
   };
 
   return {
