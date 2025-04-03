@@ -61,6 +61,10 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
       return;
     }
     
+    // Vider les prédictions existantes avant d'en générer de nouvelles
+    // Cette ligne assure que seules les nouvelles prédictions seront enregistrées
+    setPredictions([]);
+    
     const newPredictions: LotoPrediction[] = [];
     
     // Distribution des méthodes de prédiction
@@ -77,7 +81,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     // Calculer le poids total
     const totalWeight = methodsDistribution.reduce((sum, method) => sum + method.weight, 0);
     
-    // Générer les prédictions en fonction de la distribution
+    // Générer EXACTEMENT le nombre de prédictions demandées
     for (let i = 0; i < count; i++) {
       // Choisir une méthode en fonction de son poids
       let randomValue = Math.random() * totalWeight;
@@ -124,37 +128,51 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
       newPredictions.push(prediction);
     }
     
-    // Sauvegarder les prédictions dans Supabase
-    Promise.all(
-      newPredictions.map(async (prediction) => {
-        const { error } = await supabase
-          .from('predictions')
-          .insert({
-            numbers: prediction.numbers,
-            special_number: prediction.specialNumber,
-            confidence: prediction.confidence,
-            method: prediction.method,
-            status: 'pending'
+    // Supprimer d'abord toutes les prédictions existantes avant d'en ajouter de nouvelles
+    supabase
+      .from('predictions')
+      .delete()
+      .then(() => {
+        // Sauvegarder les nouvelles prédictions dans Supabase
+        Promise.all(
+          newPredictions.map(async (prediction) => {
+            const { error } = await supabase
+              .from('predictions')
+              .insert({
+                numbers: prediction.numbers,
+                special_number: prediction.specialNumber,
+                confidence: prediction.confidence,
+                method: prediction.method,
+                status: 'pending'
+              });
+            
+            if (error) throw error;
+          })
+        )
+        .then(() => {
+          toast({
+            title: "Prédictions générées",
+            description: `${count} combinaison${count > 1 ? 's ont' : ' a'} été générée${count > 1 ? 's' : ''} avec diverses méthodes d'IA.`,
           });
-        
-        if (error) throw error;
+          fetchPredictions();
+        })
+        .catch((error) => {
+          console.error("Erreur lors de l'enregistrement des prédictions:", error);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'enregistrer les prédictions",
+            variant: "destructive",
+          });
+        });
       })
-    )
-    .then(() => {
-      toast({
-        title: "Prédictions générées",
-        description: `${count} combinaisons ont été générées avec diverses méthodes d'IA.`,
+      .catch((error) => {
+        console.error("Erreur lors de la suppression des anciennes prédictions:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer les anciennes prédictions",
+          variant: "destructive",
+        });
       });
-      fetchPredictions();
-    })
-    .catch((error) => {
-      console.error("Erreur lors de l'enregistrement des prédictions:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer les prédictions",
-        variant: "destructive",
-      });
-    });
   };
 
   return {
