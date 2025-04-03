@@ -6,7 +6,7 @@ import LotoBall from "@/components/LotoBall";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { formatDate } from "@/lib/loto-utils";
+import { formatDate } from "@/lib/loto"; // Updated import
 
 const Statistiques = () => {
   const { draws, stats } = useLotoData();

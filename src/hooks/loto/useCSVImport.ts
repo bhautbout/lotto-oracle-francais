@@ -1,5 +1,5 @@
 
-import { parseCSV } from "@/lib/loto-utils";
+import { parseCSV } from "@/lib/loto"; // Updated import
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 

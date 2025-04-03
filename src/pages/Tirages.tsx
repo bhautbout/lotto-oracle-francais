@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { LotoDraw } from "@/types/loto";
@@ -8,7 +7,7 @@ import DrawItem from "@/components/DrawItem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
-import { formatDate } from "@/lib/loto-utils";
+import { formatDate } from "@/lib/loto";
 
 const Tirages = () => {
   const { draws, isLoading, importCSV, addDraw, updateDraw, deleteDraw } = useLotoData();
@@ -47,9 +46,7 @@ const Tirages = () => {
     }
   };
   
-  // Filtrer les tirages en fonction du terme de recherche
   const filteredDraws = draws.filter(draw => {
-    // Assurer que la date est valide avant de la formatter
     let dateString = "";
     try {
       dateString = formatDate(draw.date);
