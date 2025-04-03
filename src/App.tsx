@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Tirages from "./pages/Tirages";
 import Statistiques from "./pages/Statistiques";
 import Predictions from "./pages/Predictions";
+import Performance from "./pages/Performance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/tirages" element={<Tirages />} />
             <Route path="/statistiques" element={<Statistiques />} />
             <Route path="/predictions" element={<Predictions />} />
+            <Route path="/performance" element={<Performance />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
