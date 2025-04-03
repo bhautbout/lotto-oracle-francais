@@ -131,11 +131,23 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     // Supprimer d'abord toutes les prédictions existantes avant d'en ajouter de nouvelles
     const deleteExistingPredictions = async () => {
       try {
-        const { error } = await supabase
+        // Récupérer d'abord toutes les prédictions pour obtenir leurs IDs
+        const { data, error: fetchError } = await supabase
           .from('predictions')
-          .delete();
+          .select('id');
         
-        if (error) throw error;
+        if (fetchError) throw fetchError;
+        
+        if (data && data.length > 0) {
+          // Supprimer les prédictions avec un WHERE clause (en utilisant 'in' avec tous les IDs)
+          const ids = data.map(item => item.id);
+          const { error: deleteError } = await supabase
+            .from('predictions')
+            .delete()
+            .in('id', ids);
+          
+          if (deleteError) throw deleteError;
+        }
         
         // Sauvegarder les nouvelles prédictions après la suppression
         await savePredictions();
