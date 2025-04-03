@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { LotoDraw } from "@/types/loto";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { validateLotoNumbers } from "@/lib/loto-utils";
+import { validateLotoNumbers } from "@/lib/loto"; // Updated import
 import LotoBall from "./LotoBall";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";

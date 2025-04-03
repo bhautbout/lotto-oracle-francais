@@ -9,7 +9,7 @@ import {
   predictPairsAnalysis,
   predictSequenceAnalysis,
   predictMachineLearning
-} from "@/lib/loto-utils";
+} from "@/lib/loto"; // Updated import
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";

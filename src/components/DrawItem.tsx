@@ -1,10 +1,9 @@
-
 import { LotoDraw } from "@/types/loto";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import LotoBall from "./LotoBall";
-import { formatDate } from "@/lib/loto-utils";
+import { formatDate } from "@/lib/loto";
 
 interface DrawItemProps {
   draw: LotoDraw;

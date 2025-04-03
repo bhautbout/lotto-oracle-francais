@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { LotoDraw, LotoStats } from "@/types/loto";
-import { calculateStats } from "@/lib/loto-utils";
+import { calculateStats } from "@/lib/loto"; // Updated import
 
 export const useStats = (draws: LotoDraw[]) => {
   const [stats, setStats] = useState<LotoStats | null>(null);
