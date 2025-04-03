@@ -1,7 +1,15 @@
 
 import { useState } from "react";
 import { LotoDraw, LotoStats, LotoPrediction } from "@/types/loto";
-import { predictBasedOnStats, predictAI } from "@/lib/loto-utils";
+import { 
+  predictBasedOnStats, 
+  predictAI, 
+  predictTrendAnalysis,
+  predictHotColdAnalysis,
+  predictPairsAnalysis,
+  predictSequenceAnalysis,
+  predictMachineLearning
+} from "@/lib/loto-utils";
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -55,14 +63,65 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     
     const newPredictions: LotoPrediction[] = [];
     
-    // Générer des prédictions statistiques
-    for (let i = 0; i < Math.ceil(count / 2); i++) {
-      newPredictions.push(predictBasedOnStats(stats));
-    }
+    // Distribution des méthodes de prédiction
+    const methodsDistribution = [
+      { method: "statsBasedPrediction", weight: 2 },
+      { method: "aiBasedPrediction", weight: 2 },
+      { method: "trendAnalysis", weight: 1 },
+      { method: "hotColdAnalysis", weight: 1 },
+      { method: "pairsAnalysis", weight: 1 },
+      { method: "sequenceAnalysis", weight: 1 },
+      { method: "machineLearning", weight: 2 }
+    ];
     
-    // Générer des prédictions IA
-    for (let i = 0; i < Math.floor(count / 2); i++) {
-      newPredictions.push(predictAI(draws));
+    // Calculer le poids total
+    const totalWeight = methodsDistribution.reduce((sum, method) => sum + method.weight, 0);
+    
+    // Générer les prédictions en fonction de la distribution
+    for (let i = 0; i < count; i++) {
+      // Choisir une méthode en fonction de son poids
+      let randomValue = Math.random() * totalWeight;
+      let selectedMethod = "";
+      
+      for (const method of methodsDistribution) {
+        randomValue -= method.weight;
+        if (randomValue <= 0) {
+          selectedMethod = method.method;
+          break;
+        }
+      }
+      
+      // Générer la prédiction avec la méthode sélectionnée
+      let prediction: LotoPrediction;
+      
+      switch (selectedMethod) {
+        case "statsBasedPrediction":
+          prediction = predictBasedOnStats(stats);
+          break;
+        case "aiBasedPrediction":
+          prediction = predictAI(draws);
+          break;
+        case "trendAnalysis":
+          prediction = predictTrendAnalysis(draws);
+          break;
+        case "hotColdAnalysis":
+          prediction = predictHotColdAnalysis(draws);
+          break;
+        case "pairsAnalysis":
+          prediction = predictPairsAnalysis(draws);
+          break;
+        case "sequenceAnalysis":
+          prediction = predictSequenceAnalysis(draws);
+          break;
+        case "machineLearning":
+          prediction = predictMachineLearning(draws);
+          break;
+        default:
+          // Fallback sur la méthode statistique
+          prediction = predictBasedOnStats(stats);
+      }
+      
+      newPredictions.push(prediction);
     }
     
     // Sauvegarder les prédictions dans Supabase
@@ -84,7 +143,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     .then(() => {
       toast({
         title: "Prédictions générées",
-        description: `${count} combinaisons ont été générées.`,
+        description: `${count} combinaisons ont été générées avec diverses méthodes d'IA.`,
       });
       fetchPredictions();
     })
