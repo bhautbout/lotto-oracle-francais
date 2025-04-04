@@ -16,7 +16,8 @@ export const useLotoData = () => {
     fetchDraws, 
     addDraw, 
     updateDraw, 
-    deleteDraw 
+    deleteDraw,
+    isLoading: isDrawsLoading
   } = useDraws();
   
   const { stats } = useStats(draws);
@@ -29,10 +30,12 @@ export const useLotoData = () => {
   
   // Callbacks pour les mises à jour en temps réel
   const handleDrawsUpdate = useCallback(() => {
+    console.log("Mise à jour des tirages reçue");
     fetchDraws();
   }, [fetchDraws]);
   
   const handlePredictionsUpdate = useCallback(() => {
+    console.log("Mise à jour des prédictions reçue");
     fetchPredictions();
   }, [fetchPredictions]);
   
@@ -61,7 +64,7 @@ export const useLotoData = () => {
     draws,
     stats,
     predictions,
-    isLoading,
+    isLoading: isLoading || isDrawsLoading,
     importCSV,
     addDraw,
     updateDraw,

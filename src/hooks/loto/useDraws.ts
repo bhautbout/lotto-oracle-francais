@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { LotoDraw } from "@/types/loto";
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,7 @@ export const useDraws = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Fonction pour récupérer les tirages depuis Supabase
-  const fetchDraws = async () => {
+  const fetchDraws = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -72,11 +72,12 @@ export const useDraws = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Ajouter un tirage
-  const addDraw = async (draw: Omit<LotoDraw, "id">) => {
+  const addDraw = useCallback(async (draw: Omit<LotoDraw, "id">) => {
     try {
+      console.log("Ajout d'un tirage:", draw);
       const { data, error } = await supabase
         .from('draws')
         .insert({
@@ -88,7 +89,12 @@ export const useDraws = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
+      }
+      
+      console.log("Tirage ajouté avec succès:", data);
       
       toast({
         title: "Tirage ajouté",
@@ -105,11 +111,12 @@ export const useDraws = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchDraws]);
 
   // Modifier un tirage
-  const updateDraw = async (id: string, updatedDraw: Omit<LotoDraw, "id">) => {
+  const updateDraw = useCallback(async (id: string, updatedDraw: Omit<LotoDraw, "id">) => {
     try {
+      console.log("Mise à jour du tirage:", id, updatedDraw);
       const { error } = await supabase
         .from('draws')
         .update({
@@ -120,7 +127,12 @@ export const useDraws = () => {
         })
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
+      }
+      
+      console.log("Tirage mis à jour avec succès");
       
       toast({
         title: "Tirage mis à jour",
@@ -137,17 +149,23 @@ export const useDraws = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchDraws]);
 
   // Supprimer un tirage
-  const deleteDraw = async (id: string) => {
+  const deleteDraw = useCallback(async (id: string) => {
     try {
+      console.log("Suppression du tirage:", id);
       const { error } = await supabase
         .from('draws')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
+      }
+      
+      console.log("Tirage supprimé avec succès");
       
       toast({
         title: "Tirage supprimé",
@@ -164,7 +182,7 @@ export const useDraws = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchDraws]);
 
   return {
     draws,

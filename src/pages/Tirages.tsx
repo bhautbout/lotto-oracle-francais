@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { LotoDraw } from "@/types/loto";
 import CSVImport from "@/components/CSVImport";
@@ -15,7 +16,9 @@ const Tirages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDraw, setSelectedDraw] = useState<LotoDraw | null>(null);
   
+  // Ajouter un log pour vérifier si le handler est appelé
   const handleAddClick = () => {
+    console.log("Bouton Ajouter un tirage cliqué");
     setSelectedDraw(null);
     setShowForm(true);
   };
@@ -45,6 +48,16 @@ const Tirages = () => {
       deleteDraw(draw.id);
     }
   };
+  
+  // Ajouter un effet pour vérifier l'état initial
+  useEffect(() => {
+    console.log("État initial showForm:", showForm);
+  }, []);
+
+  // Ajouter un effet pour surveiller les changements de l'état showForm
+  useEffect(() => {
+    console.log("showForm a changé:", showForm);
+  }, [showForm]);
   
   const filteredDraws = draws.filter(draw => {
     let dateString = "";
@@ -79,7 +92,11 @@ const Tirages = () => {
                 className="pl-8"
               />
             </div>
-            <Button onClick={handleAddClick} className="whitespace-nowrap">
+            <Button 
+              onClick={handleAddClick} 
+              className="whitespace-nowrap"
+              type="button"
+            >
               <Plus className="mr-2 h-4 w-4" /> Ajouter un tirage
             </Button>
           </div>
