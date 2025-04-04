@@ -39,23 +39,23 @@ export const useLotoData = () => {
   // Configurer les abonnements en temps réel
   useRealtimeUpdates(handleDrawsUpdate, handlePredictionsUpdate);
   
-  // Charger les données initiales - Correction: useEffect au lieu de useState
+  // Charger les données initiales
   useEffect(() => {
     fetchDraws();
     fetchPredictions();
   }, [fetchDraws, fetchPredictions]);
   
+  // Extraction du hook useCSVImport hors du callback
+  const { importCSV: doImport } = useCSVImport(() => {
+    setIsLoading(false);
+    fetchDraws();
+  });
+  
   // Wrapper pour l'importation CSV avec gestion du chargement
   const importCSV = useCallback((csv: string) => {
     setIsLoading(true);
-    
-    const { importCSV: doImport } = useCSVImport(() => {
-      setIsLoading(false);
-      fetchDraws();
-    });
-    
     doImport(csv);
-  }, [fetchDraws]);
+  }, [doImport]);
   
   return {
     draws,
