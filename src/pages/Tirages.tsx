@@ -9,14 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { formatDate } from "@/lib/loto";
+import { useToast } from "@/hooks/use-toast";
 
 const Tirages = () => {
   const { draws, isLoading, importCSV, addDraw, updateDraw, deleteDraw } = useLotoData();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDraw, setSelectedDraw] = useState<LotoDraw | null>(null);
+  const { toast } = useToast();
   
-  // Ajouter un log pour vérifier si le handler est appelé
   const handleAddClick = () => {
     console.log("Bouton Ajouter un tirage cliqué");
     setSelectedDraw(null);
@@ -34,32 +35,45 @@ const Tirages = () => {
   };
   
   const handleFormSubmit = (draw: Omit<LotoDraw, "id">) => {
-    if (selectedDraw) {
-      updateDraw(selectedDraw.id, draw);
-    } else {
-      addDraw(draw);
+    try {
+      if (selectedDraw) {
+        updateDraw(selectedDraw.id, draw);
+        toast({
+          title: "Tirage mis à jour",
+          description: "Le tirage a été mis à jour avec succès"
+        });
+      } else {
+        addDraw(draw);
+        toast({
+          title: "Tirage ajouté",
+          description: "Le nouveau tirage a été ajouté avec succès"
+        });
+      }
+      setShowForm(false);
+      setSelectedDraw(null);
+    } catch (error) {
+      console.error("Erreur lors de la soumission du formulaire:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement du tirage",
+        variant: "destructive"
+      });
     }
-    setShowForm(false);
-    setSelectedDraw(null);
   };
   
   const handleDeleteClick = (draw: LotoDraw) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce tirage?")) {
       deleteDraw(draw.id);
+      toast({
+        title: "Tirage supprimé",
+        description: "Le tirage a été supprimé avec succès"
+      });
     }
   };
   
-  // Ajouter un effet pour vérifier l'état initial
-  useEffect(() => {
-    console.log("État initial showForm:", showForm);
-  }, []);
-
-  // Ajouter un effet pour surveiller les changements de l'état showForm
-  useEffect(() => {
-    console.log("showForm a changé:", showForm);
-  }, [showForm]);
-  
   const filteredDraws = draws.filter(draw => {
+    if (!searchTerm.trim()) return true;
+    
     let dateString = "";
     try {
       dateString = formatDate(draw.date);
@@ -94,7 +108,7 @@ const Tirages = () => {
             </div>
             <Button 
               onClick={handleAddClick} 
-              className="whitespace-nowrap"
+              className="whitespace-nowrap bg-primary hover:bg-primary/90"
               type="button"
             >
               <Plus className="mr-2 h-4 w-4" /> Ajouter un tirage
