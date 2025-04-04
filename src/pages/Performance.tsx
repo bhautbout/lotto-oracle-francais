@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { useModelPerformance } from "@/hooks/loto/useModelPerformance";
@@ -9,13 +8,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp } from "lucide-react";
 
 const Performance = () => {
-  const { draws, predictions, fetchPredictions } = useLotoData();
+  const { draws, predictions } = useLotoData();
   const { performance, selectedMethod, setSelectedMethod } = useModelPerformance(draws, predictions);
 
-  useEffect(() => {
-    // S'assurer que les prédictions sont chargées
-    fetchPredictions();
-  }, [fetchPredictions]);
+  // Remove the useEffect that calls fetchPredictions since it doesn't exist
 
   // Trouver les détails de la méthode sélectionnée
   const selectedMethodDetails = selectedMethod
