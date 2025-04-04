@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDraws } from "./loto/useDraws";
 import { usePredictions } from "./loto/usePredictions";
 import { useCSVImport } from "./loto/useCSVImport";
@@ -39,11 +39,11 @@ export const useLotoData = () => {
   // Configurer les abonnements en temps réel
   useRealtimeUpdates(handleDrawsUpdate, handlePredictionsUpdate);
   
-  // Charger les données initiales
-  useState(() => {
+  // Charger les données initiales - Correction: useEffect au lieu de useState
+  useEffect(() => {
     fetchDraws();
     fetchPredictions();
-  });
+  }, [fetchDraws, fetchPredictions]);
   
   // Wrapper pour l'importation CSV avec gestion du chargement
   const importCSV = useCallback((csv: string) => {
