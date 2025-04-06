@@ -16,3 +16,6 @@ export { predictPairsAnalysis, predictSequenceAnalysis } from './pattern-predict
 
 // Machine learning prediction
 export { predictMachineLearning } from './ml-predictions';
+
+// Prediction generator
+export { generateOptimalNumbers } from './prediction-generator';

@@ -47,7 +47,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
   }, []);
 
   // Générer des prédictions basées sur les statistiques
-  const generatePredictions = useCallback(async () => {
+  const generatePredictions = useCallback(async (count = 4) => {
     try {
       if (!stats || draws.length < 10) {
         toast({
@@ -64,7 +64,12 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
       const methods = ["frequency", "patterns", "machine-learning", "advanced"];
       const predictions = [];
 
-      for (const method of methods) {
+      // Generate only the number of predictions requested
+      const methodsToUse = count <= methods.length 
+        ? methods.slice(0, count) 
+        : [...Array(count)].map((_, i) => methods[i % methods.length]);
+
+      for (const method of methodsToUse) {
         const { numbers, specialNumber, confidence } = generateOptimalNumbers(draws, stats, method);
         
         predictions.push({

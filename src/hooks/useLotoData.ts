@@ -25,8 +25,13 @@ export const useLotoData = () => {
   const { 
     predictions, 
     fetchPredictions, 
-    generatePredictions 
+    generatePredictions: generatePredictionsBase
   } = usePredictions(draws, stats);
+  
+  // Wrapper for generating predictions that accepts a count
+  const generatePredictions = useCallback((count = 4) => {
+    return generatePredictionsBase(count);
+  }, [generatePredictionsBase]);
   
   // Callbacks pour les mises à jour en temps réel
   const handleDrawsUpdate = useCallback(() => {
