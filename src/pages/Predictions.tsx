@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import PredictionCard from "@/components/PredictionCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { RefreshCw, AlertCircle, Brain } from "lucide-react";
+import { RefreshCw, AlertCircle, Brain, Database } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Predictions = () => {
@@ -98,6 +97,8 @@ const Predictions = () => {
     );
   }
   
+  const trainingSize = draws.length > 1000 ? 1000 : draws.length;
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-loto-blue">Prédictions</h1>
@@ -118,7 +119,13 @@ const Predictions = () => {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-500 mb-2">Base de données</p>
-                  <p className="font-semibold">{draws.length} tirages analysés</p>
+                  <div className="flex items-center">
+                    <Database className="mr-2 h-4 w-4 text-blue-500" />
+                    <p className="font-semibold">{draws.length} tirages disponibles</p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    (entraînement sur {trainingSize} tirages)
+                  </p>
                 </div>
                 
                 <div>

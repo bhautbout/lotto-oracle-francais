@@ -60,6 +60,17 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
 
       setIsLoading(true);
 
+      // Préparer les données d'entraînement (les 1000 derniers tirages)
+      const trainingData = draws.length > 1000 
+        ? draws.slice(0, 1000) 
+        : draws;
+      
+      console.log(`Entraînement sur ${trainingData.length} tirages`);
+      
+      // Recalculer les statistiques sur les données d'entraînement
+      const { calculateStats } = await import("@/lib/loto");
+      const trainingStats = calculateStats(trainingData);
+
       // Utiliser différentes méthodes de prédiction
       const methods = ["frequency", "patterns", "machine-learning", "advanced"];
       const predictions = [];
@@ -70,7 +81,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
         : [...Array(count)].map((_, i) => methods[i % methods.length]);
 
       for (const method of methodsToUse) {
-        const { numbers, specialNumber, confidence } = generateOptimalNumbers(draws, stats, method);
+        const { numbers, specialNumber, confidence } = generateOptimalNumbers(trainingData, trainingStats, method);
         
         predictions.push({
           numbers,
@@ -93,7 +104,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
 
       toast({
         title: "Prédictions générées",
-        description: `${predictions.length} nouvelles prédictions ont été générées.`,
+        description: `${predictions.length} nouvelles prédictions ont été générées en utilisant ${trainingData.length} tirages d'entraînement.`,
       });
 
       // Rafraîchir les prédictions
