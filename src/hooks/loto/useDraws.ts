@@ -78,6 +78,18 @@ export const useDraws = () => {
   const addDraw = useCallback(async (draw: Omit<LotoDraw, "id">) => {
     try {
       console.log("Ajout d'un tirage:", draw);
+
+      // Vérifier que tous les champs nécessaires sont présents
+      if (!draw.date || !draw.numbers || draw.numbers.length !== 5 || !draw.specialNumber) {
+        console.error("Données de tirage invalides:", draw);
+        toast({
+          title: "Erreur",
+          description: "Données de tirage incomplètes ou invalides",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('draws')
         .insert({
@@ -103,11 +115,11 @@ export const useDraws = () => {
       
       // La récupération automatique se fera via le channel
       fetchDraws();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de l'ajout du tirage:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter le tirage",
+        description: error?.message || "Impossible d'ajouter le tirage",
         variant: "destructive",
       });
     }
@@ -141,11 +153,11 @@ export const useDraws = () => {
       
       // La récupération automatique se fera via le channel
       fetchDraws();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la mise à jour du tirage:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le tirage",
+        description: error?.message || "Impossible de mettre à jour le tirage",
         variant: "destructive",
       });
     }
@@ -174,11 +186,11 @@ export const useDraws = () => {
       
       // La récupération automatique se fera via le channel
       fetchDraws();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la suppression du tirage:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer le tirage",
+        description: error?.message || "Impossible de supprimer le tirage",
         variant: "destructive",
       });
     }

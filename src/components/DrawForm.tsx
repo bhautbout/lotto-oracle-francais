@@ -51,6 +51,16 @@ const DrawForm = ({ onSubmit, initialData, onCancel }: DrawFormProps) => {
       return;
     }
     
+    if (numbers.length !== 5) {
+      setError("Vous devez sélectionner exactement 5 numéros principaux");
+      return;
+    }
+    
+    if (specialNumber <= 0 || specialNumber > 10) {
+      setError("Le numéro chance doit être entre 1 et 10");
+      return;
+    }
+    
     if (!validateLotoNumbers(numbers, specialNumber)) {
       setError("Combinaison de numéros invalide. Vérifiez que vous avez 5 numéros uniques entre 1 et 49, et un numéro chance entre 1 et 10.");
       return;
