@@ -1,39 +1,20 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { LotoDraw, LotoPrediction, LotoStats } from "@/types/loto";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { generateOptimalNumbers } from "@/lib/loto";
+import { fetchPredictionsFromDb, savePredictionsToDb } from "./usePredictionsDb";
+import { generatePredictionData } from "./usePredictionGenerator";
 
 export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
   const [predictions, setPredictions] = useState<LotoPrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Récupérer les prédictions depuis Supabase
+  // Fetch predictions from Supabase
   const fetchPredictions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('predictions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Erreur lors de la récupération des prédictions:", error);
-        throw error;
-      }
-
-      // Convertir les données de Supabase au format LotoPrediction
-      const formattedPredictions: LotoPrediction[] = data.map(p => ({
-        id: p.id,
-        numbers: p.numbers,
-        specialNumber: p.special_number,
-        confidence: Number(p.confidence),
-        method: p.method,
-        status: p.status as "pending" | "verified" | "matched" | undefined
-      }));
-
-      setPredictions(formattedPredictions);
+      const fetchedPredictions = await fetchPredictionsFromDb();
+      setPredictions(fetchedPredictions);
     } catch (error) {
       console.error("Erreur lors de la récupération des prédictions:", error);
       toast({
@@ -46,7 +27,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     }
   }, []);
 
-  // Générer des prédictions basées sur les statistiques
+  // Generate predictions based on stats
   const generatePredictions = useCallback(async (count = 4) => {
     try {
       if (!stats || draws.length < 10) {
@@ -59,55 +40,21 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
       }
 
       setIsLoading(true);
-
-      // Préparer les données d'entraînement (les 1000 derniers tirages)
-      const trainingData = draws.length > 1000 
-        ? draws.slice(0, 1000) 
-        : draws;
       
-      console.log(`Entraînement sur ${trainingData.length} tirages`);
+      // Generate predictions using the training data
+      const predictions = await generatePredictionData(draws, stats, count);
       
-      // Recalculer les statistiques sur les données d'entraînement
-      const { calculateStats } = await import("@/lib/loto");
-      const trainingStats = calculateStats(trainingData);
-
-      // Utiliser différentes méthodes de prédiction
-      const methods = ["frequency", "patterns", "machine-learning", "advanced"];
-      const predictions = [];
-
-      // Generate only the number of predictions requested
-      const methodsToUse = count <= methods.length 
-        ? methods.slice(0, count) 
-        : [...Array(count)].map((_, i) => methods[i % methods.length]);
-
-      for (const method of methodsToUse) {
-        const { numbers, specialNumber, confidence } = generateOptimalNumbers(trainingData, trainingStats, method);
-        
-        predictions.push({
-          numbers,
-          special_number: specialNumber,
-          confidence,
-          method,
-          status: "pending"
-        });
-      }
-
-      // Enregistrer les prédictions dans Supabase
-      const { error } = await supabase
-        .from('predictions')
-        .insert(predictions);
-
-      if (error) {
-        console.error("Erreur lors de l'enregistrement des prédictions:", error);
-        throw error;
-      }
-
+      // Save predictions to Supabase
+      await savePredictionsToDb(predictions);
+      
+      // Show success message
+      const trainingSize = draws.length > 1000 ? 1000 : draws.length;
       toast({
         title: "Prédictions générées",
-        description: `${predictions.length} nouvelles prédictions ont été générées en utilisant ${trainingData.length} tirages d'entraînement.`,
+        description: `${predictions.length} nouvelles prédictions ont été générées en utilisant ${trainingSize} tirages d'entraînement.`,
       });
 
-      // Rafraîchir les prédictions
+      // Refresh predictions
       fetchPredictions();
     } catch (error) {
       console.error("Erreur lors de la génération des prédictions:", error);
