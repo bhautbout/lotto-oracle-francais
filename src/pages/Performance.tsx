@@ -14,7 +14,7 @@ const Performance = () => {
 
   // Récupérer un nombre plus important de prédictions au chargement
   useEffect(() => {
-    // Chargement de 1000 prédictions max au lieu des 250 par défaut
+    // Chargement de 1000 prédictions max pour avoir une analyse plus complète
     fetchPredictions(1000);
   }, [fetchPredictions]);
 

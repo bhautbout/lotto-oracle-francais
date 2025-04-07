@@ -24,6 +24,8 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
   useEffect(() => {
     if (!draws.length || !predictions.length) return;
 
+    console.log(`Analyse de performance avec ${predictions.length} prédictions`);
+    
     const sortedDraws = [...draws].sort((a, b) => 
       new Date(a.date).getTime() - new Date(b.date).getTime()
     ).slice(-500); // Limiter aux 500 derniers tirages
