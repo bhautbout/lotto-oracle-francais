@@ -47,11 +47,10 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
       let specialNumbersFound = 0;
       const detailedPredictions: MethodPerformance["predictions"] = [];
       
-      // Limiter le nombre de prédictions à analyser pour des performances optimales
-      const predictionsToAnalyze = methodPredictions.slice(0, 200);
+      // Analyser toutes les prédictions sans limite
       let analyzedPredictions = 0;
       
-      predictionsToAnalyze.forEach(prediction => {
+      methodPredictions.forEach(prediction => {
         // Pour chaque prédiction, on la compare avec un tirage aléatoire
         // Ceci est une simulation pour tester l'interface, en production on utiliserait
         // des tirages réels correspondant aux dates de prédiction
@@ -96,6 +95,7 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
     performanceData.sort((a, b) => (b.averageNumbers + b.averageSpecialNumbers) - (a.averageNumbers + a.averageSpecialNumbers));
     
     console.log(`Performance data generated for ${performanceData.length} methods`);
+    console.log(`Nombre total de prédictions analysées: ${performanceData.reduce((acc, method) => acc + method.predictions.length, 0)}`);
     setPerformance(performanceData);
   }, [draws, predictions]);
 

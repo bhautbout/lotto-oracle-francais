@@ -42,7 +42,7 @@ const ModelPerformanceTable = ({
 
   return (
     <Table>
-      <TableCaption>Analyse des performances sur les 500 derniers tirages</TableCaption>
+      <TableCaption>Analyse des performances sur les prédictions disponibles</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead className="w-[250px]">Méthode de prédiction</TableHead>

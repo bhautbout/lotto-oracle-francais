@@ -15,6 +15,7 @@ const Performance = () => {
   // Récupérer un nombre plus important de prédictions au chargement
   useEffect(() => {
     // Chargement de 1000 prédictions max pour avoir une analyse plus complète
+    console.log("Chargement des prédictions pour la page performance");
     fetchPredictions(1000);
   }, [fetchPredictions]);
 
