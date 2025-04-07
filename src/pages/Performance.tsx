@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { useModelPerformance } from "@/hooks/loto/useModelPerformance";
@@ -8,10 +9,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp } from "lucide-react";
 
 const Performance = () => {
-  const { draws, predictions } = useLotoData();
+  const { draws, predictions, fetchPredictions } = useLotoData();
   const { performance, selectedMethod, setSelectedMethod } = useModelPerformance(draws, predictions);
 
-  // Remove the useEffect that calls fetchPredictions since it doesn't exist
+  // Récupérer un nombre plus important de prédictions au chargement
+  useEffect(() => {
+    // Chargement de 1000 prédictions max au lieu des 250 par défaut
+    fetchPredictions(1000);
+  }, [fetchPredictions]);
 
   // Trouver les détails de la méthode sélectionnée
   const selectedMethodDetails = selectedMethod
@@ -40,7 +45,7 @@ const Performance = () => {
               Performance comparative des modèles
             </CardTitle>
             <CardDescription>
-              Analyse de la performance des différentes méthodes de prédiction sur les 500 derniers tirages
+              Analyse de la performance des différentes méthodes de prédiction sur les tirages
             </CardDescription>
           </CardHeader>
           <CardContent>

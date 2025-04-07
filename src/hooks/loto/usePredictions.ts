@@ -10,10 +10,10 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch predictions from Supabase
-  const fetchPredictions = useCallback(async () => {
+  const fetchPredictions = useCallback(async (limit = 1000) => {
     try {
       setIsLoading(true);
-      const fetchedPredictions = await fetchPredictionsFromDb();
+      const fetchedPredictions = await fetchPredictionsFromDb(limit);
       setPredictions(fetchedPredictions);
     } catch (error) {
       console.error("Erreur lors de la récupération des prédictions:", error);

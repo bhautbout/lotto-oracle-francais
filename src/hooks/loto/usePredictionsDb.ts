@@ -6,12 +6,13 @@ import { toast } from "@/hooks/use-toast";
 /**
  * Fetches all predictions from the database
  */
-export const fetchPredictionsFromDb = async (): Promise<LotoPrediction[]> => {
+export const fetchPredictionsFromDb = async (limit = 1000): Promise<LotoPrediction[]> => {
   try {
     const { data, error } = await supabase
       .from('predictions')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) {
       console.error("Erreur lors de la récupération des prédictions:", error);

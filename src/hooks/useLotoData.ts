@@ -74,6 +74,7 @@ export const useLotoData = () => {
     addDraw,
     updateDraw,
     deleteDraw,
-    generatePredictions
+    generatePredictions,
+    fetchPredictions
   };
 };
