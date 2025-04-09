@@ -6,10 +6,11 @@ import ModelPerformanceTable from "@/components/ModelPerformanceTable";
 import MethodDetailView from "@/components/MethodDetailView";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, TrendingUp } from "lucide-react";
+import { AlertCircle, TrendingUp, Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const Performance = () => {
-  const { draws, predictions, fetchPredictions } = useLotoData();
+  const { draws, predictions, fetchPredictions, isLoading } = useLotoData();
   const { performance, selectedMethod, setSelectedMethod } = useModelPerformance(draws, predictions);
 
   // Récupérer un nombre plus important de prédictions au chargement
@@ -26,7 +27,10 @@ const Performance = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-loto-blue">Performance des modèles</h1>
+      <h1 className="text-3xl font-bold mb-2 text-loto-blue">Performance des modèles</h1>
+      <p className="text-gray-500 mb-6">
+        Analyse comparative des différentes méthodes de prédiction sur {predictions.length} prédictions
+      </p>
 
       {draws.length < 500 ? (
         <Alert variant="warning" className="mb-6">
@@ -38,6 +42,13 @@ const Performance = () => {
         </Alert>
       ) : null}
 
+      {isLoading && (
+        <div className="flex justify-center items-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-loto-blue" />
+          <span className="ml-2">Analyse des prédictions en cours...</span>
+        </div>
+      )}
+
       <div className="space-y-8">
         <Card>
           <CardHeader>
@@ -46,7 +57,7 @@ const Performance = () => {
               Performance comparative des modèles
             </CardTitle>
             <CardDescription>
-              Analyse de la performance des différentes méthodes de prédiction sur les tirages
+              Analyse de {performance.reduce((acc, method) => acc + method.totalPredictions, 0)} prédictions réparties sur {performance.length} méthode(s)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -59,10 +70,13 @@ const Performance = () => {
         </Card>
 
         {selectedMethodDetails && (
-          <MethodDetailView 
-            method={selectedMethodDetails.method} 
-            predictions={selectedMethodDetails.predictions} 
-          />
+          <>
+            <Separator />
+            <MethodDetailView 
+              method={selectedMethodDetails.method} 
+              predictions={selectedMethodDetails.predictions} 
+            />
+          </>
         )}
       </div>
     </div>
