@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import PredictionCard from "@/components/PredictionCard";
@@ -12,7 +13,7 @@ const Predictions = () => {
   const [count, setCount] = useState(5);
   
   const handleGenerate = () => {
-    generatePredictions(count);
+    generatePredictions({ count });
   };
   
   // Si aucun tirage n'est disponible
