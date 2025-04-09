@@ -1,6 +1,6 @@
 
 import { LotoDraw, LotoStats } from "@/types/loto";
-import { generateOptimalNumbers } from "@/lib/loto";
+import { generateOptimalNumbers, predictionMethods } from "@/lib/loto";
 
 /**
  * Prepares training data and generates predictions
@@ -8,7 +8,8 @@ import { generateOptimalNumbers } from "@/lib/loto";
 export const generatePredictionData = async (
   draws: LotoDraw[],
   stats: LotoStats | null,
-  count = 4
+  count = 4,
+  specificMethods: string[] = []
 ): Promise<Array<{
   numbers: number[],
   special_number: number,
@@ -32,8 +33,22 @@ export const generatePredictionData = async (
   const { calculateStats } = await import("@/lib/loto");
   const trainingStats = calculateStats(trainingData);
 
-  // Use different prediction methods
-  const methods = ["frequency", "patterns", "machine-learning", "advanced"];
+  // Determine which methods to use
+  let methodsToUse: string[];
+  
+  if (specificMethods && specificMethods.length > 0) {
+    // Use user-specified methods
+    methodsToUse = specificMethods;
+  } else {
+    // Use all available methods or limit to count
+    const availableMethods = predictionMethods.map(m => m.id);
+    methodsToUse = count <= availableMethods.length 
+      ? availableMethods.slice(0, count) 
+      : [...Array(count)].map((_, i) => availableMethods[i % availableMethods.length]);
+  }
+
+  console.log(`Génération de prédictions avec ${methodsToUse.length} méthodes: ${methodsToUse.join(', ')}`);
+  
   const predictions: Array<{
     numbers: number[],
     special_number: number,
@@ -42,22 +57,22 @@ export const generatePredictionData = async (
     status: string
   }> = [];
 
-  // Generate only the requested number of predictions
-  const methodsToUse = count <= methods.length 
-    ? methods.slice(0, count) 
-    : [...Array(count)].map((_, i) => methods[i % methods.length]);
-
   for (const method of methodsToUse) {
-    const { numbers, specialNumber, confidence } = generateOptimalNumbers(trainingData, trainingStats, method);
+    const { numbers, specialNumber, confidence, method: methodName } = generateOptimalNumbers(trainingData, trainingStats, method);
     
     predictions.push({
       numbers,
       special_number: specialNumber,
       confidence,
-      method,
+      method: methodName,
       status: "pending"
     });
   }
 
   return predictions;
 };
+
+export const getAvailableMethods = () => {
+  return predictionMethods;
+};
+

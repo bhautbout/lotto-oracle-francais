@@ -28,7 +28,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
   }, []);
 
   // Generate predictions based on stats
-  const generatePredictions = useCallback(async (count = 4) => {
+  const generatePredictions = useCallback(async (count = 4, specificMethods: string[] = []) => {
     try {
       if (!stats || draws.length < 10) {
         toast({
@@ -41,8 +41,8 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
 
       setIsLoading(true);
       
-      // Generate predictions using the training data
-      const predictions = await generatePredictionData(draws, stats, count);
+      // Generate predictions using the training data and optional specific methods
+      const predictions = await generatePredictionData(draws, stats, count, specificMethods);
       
       // Save predictions to Supabase
       await savePredictionsToDb(predictions);

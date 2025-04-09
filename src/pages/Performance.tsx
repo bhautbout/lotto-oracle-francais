@@ -1,17 +1,26 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { useModelPerformance } from "@/hooks/loto/useModelPerformance";
+import { getAvailableMethods } from "@/hooks/loto/usePredictionGenerator";
 import ModelPerformanceTable from "@/components/ModelPerformanceTable";
 import MethodDetailView from "@/components/MethodDetailView";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, TrendingUp, Loader2 } from "lucide-react";
+import { AlertCircle, TrendingUp, Loader2, Plus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/hooks/use-toast";
 
 const Performance = () => {
-  const { draws, predictions, fetchPredictions, isLoading } = useLotoData();
+  const { draws, predictions, fetchPredictions, generatePredictions, isLoading } = useLotoData();
   const { performance, selectedMethod, setSelectedMethod } = useModelPerformance(draws, predictions);
+  const [showMethodSelector, setShowMethodSelector] = useState(false);
+  const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+  
+  // Récupérer la liste des méthodes disponibles
+  const availableMethods = getAvailableMethods();
 
   // Récupérer un nombre plus important de prédictions au chargement
   useEffect(() => {
@@ -25,6 +34,32 @@ const Performance = () => {
     ? performance.find(p => p.method === selectedMethod)
     : null;
 
+  const toggleMethodSelection = (methodId: string) => {
+    setSelectedMethods(prev => 
+      prev.includes(methodId) 
+        ? prev.filter(id => id !== methodId)
+        : [...prev, methodId]
+    );
+  };
+
+  const handleGeneratePredictions = () => {
+    if (selectedMethods.length === 0) {
+      toast({
+        title: "Sélection requise",
+        description: "Veuillez sélectionner au moins une méthode de prédiction",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    generatePredictions(selectedMethods.length, selectedMethods);
+    setShowMethodSelector(false);
+    toast({
+      title: "Génération en cours",
+      description: `Génération de ${selectedMethods.length} nouvelles prédictions...`,
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-2 text-loto-blue">Performance des modèles</h1>
@@ -32,15 +67,65 @@ const Performance = () => {
         Analyse comparative des différentes méthodes de prédiction sur {predictions.length} prédictions
       </p>
 
-      {draws.length < 500 ? (
-        <Alert variant="warning" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Pour une analyse complète, il est recommandé d'avoir au moins 500 tirages. 
-            Vous avez actuellement {draws.length} tirage(s).
-          </AlertDescription>
-        </Alert>
-      ) : null}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          {draws.length < 500 ? (
+            <Alert variant="warning" className="mb-2">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Pour une analyse complète, il est recommandé d'avoir au moins 500 tirages. 
+                Vous avez actuellement {draws.length} tirage(s).
+              </AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
+        
+        <Button 
+          onClick={() => setShowMethodSelector(!showMethodSelector)} 
+          className="bg-loto-blue hover:bg-blue-700"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Générer avec méthodes spécifiques
+        </Button>
+      </div>
+
+      {showMethodSelector && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Sélectionner les méthodes de prédiction</CardTitle>
+            <CardDescription>
+              Choisissez les méthodes que vous souhaitez utiliser pour générer de nouvelles prédictions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {availableMethods.map((method) => (
+                <div key={method.id} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={method.id}
+                    checked={selectedMethods.includes(method.id)}
+                    onCheckedChange={() => toggleMethodSelection(method.id)}
+                  />
+                  <label
+                    htmlFor={method.id}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {method.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setShowMethodSelector(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleGeneratePredictions}>
+                Générer les prédictions
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isLoading && (
         <div className="flex justify-center items-center p-8">

@@ -5,6 +5,17 @@ import { predictAI, predictTrendAnalysis } from "./advanced-predictions";
 import { predictPairsAnalysis, predictSequenceAnalysis } from "./pattern-predictions";
 import { predictMachineLearning } from "./ml-predictions";
 
+// Liste complète des méthodes de prédiction disponibles
+export const predictionMethods = [
+  { id: "frequency", name: "Analyse statistique de fréquence" },
+  { id: "hot-cold", name: "Analyse numéros chauds/froids" },
+  { id: "patterns", name: "Analyse des paires fréquentes" },
+  { id: "sequence", name: "Analyse des séquences" },
+  { id: "machine-learning", name: "Machine Learning Prédictif" }, 
+  { id: "ai", name: "Intelligence artificielle prédictive" },
+  { id: "trend", name: "Analyse des tendances et cycles" }
+];
+
 // Generate optimal numbers based on different prediction methods
 export const generateOptimalNumbers = (
   draws: LotoDraw[], 
@@ -19,14 +30,19 @@ export const generateOptimalNumbers = (
     case "hotcold":
       return predictHotColdAnalysis(draws);
     case "patterns":
-      return Math.random() > 0.5 ? predictPairsAnalysis(draws) : predictSequenceAnalysis(draws);
+      return predictPairsAnalysis(draws);
+    case "sequence":
+      return predictSequenceAnalysis(draws);
     case "machine-learning":
     case "ml":
       return predictMachineLearning(draws);
-    case "advanced":
-      return Math.random() > 0.5 ? predictAI(draws) : predictTrendAnalysis(draws);
+    case "ai":
+      return predictAI(draws);
+    case "trend":
+      return predictTrendAnalysis(draws);
     default:
       // Fallback to basic stats-based prediction
       return predictBasedOnStats(stats);
   }
 };
+
