@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { LotoDraw, LotoPrediction, LotoStats } from "@/types/loto";
 import { toast } from "@/hooks/use-toast";
@@ -9,7 +8,6 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
   const [predictions, setPredictions] = useState<LotoPrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch predictions from Supabase
   const fetchPredictions = useCallback(async (limit = 1000) => {
     try {
       setIsLoading(true);
@@ -27,7 +25,6 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
     }
   }, []);
 
-  // Generate predictions based on stats
   const generatePredictions = useCallback(async (count = 4, specificMethods: string[] = []) => {
     try {
       if (!stats || draws.length < 10) {
@@ -41,20 +38,16 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
 
       setIsLoading(true);
       
-      // Generate predictions using the training data and optional specific methods
       const predictions = await generatePredictionData(draws, stats, count, specificMethods);
       
-      // Save predictions to Supabase
       await savePredictionsToDb(predictions);
       
-      // Show success message
       const trainingSize = draws.length > 1000 ? 1000 : draws.length;
       toast({
         title: "Prédictions générées",
         description: `${predictions.length} nouvelles prédictions ont été générées en utilisant ${trainingSize} tirages d'entraînement.`,
       });
 
-      // Refresh predictions
       fetchPredictions();
     } catch (error) {
       console.error("Erreur lors de la génération des prédictions:", error);

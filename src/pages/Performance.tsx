@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { useModelPerformance } from "@/hooks/loto/useModelPerformance";
@@ -19,17 +18,13 @@ const Performance = () => {
   const [showMethodSelector, setShowMethodSelector] = useState(false);
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
   
-  // Récupérer la liste des méthodes disponibles
   const availableMethods = getAvailableMethods();
 
-  // Récupérer un nombre plus important de prédictions au chargement
   useEffect(() => {
-    // Chargement de 1000 prédictions max pour avoir une analyse plus complète
     console.log("Chargement des prédictions pour la page performance");
     fetchPredictions(1000);
   }, [fetchPredictions]);
 
-  // Trouver les détails de la méthode sélectionnée
   const selectedMethodDetails = selectedMethod
     ? performance.find(p => p.method === selectedMethod)
     : null;

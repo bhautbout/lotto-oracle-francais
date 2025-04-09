@@ -75,4 +75,3 @@ export const generatePredictionData = async (
 export const getAvailableMethods = () => {
   return predictionMethods;
 };
-
