@@ -22,7 +22,7 @@ const Performance = () => {
   
   const availableMethods = getAvailableMethods();
 
-  // Charger toutes les prédictions disponibles au lieu de se limiter à 1000
+  // Charger toutes les prédictions disponibles (augmentation de la limite à 10000)
   useEffect(() => {
     console.log("Chargement des prédictions pour la page performance");
     loadAllPredictions();
@@ -31,8 +31,9 @@ const Performance = () => {
   // Fonction pour charger toutes les prédictions
   const loadAllPredictions = async () => {
     setIsRefreshing(true);
-    await fetchPredictions(5000); // Augmentation du nombre de prédictions récupérées
+    await fetchPredictions(10000); // Augmentation significative du nombre de prédictions récupérées
     setIsRefreshing(false);
+    console.log(`Récupération de prédictions terminée, nombre obtenu: ${predictions.length}`);
   };
 
   const selectedMethodDetails = selectedMethod
@@ -84,7 +85,7 @@ const Performance = () => {
             size="sm"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Actualiser les données
+            Actualiser les données ({predictions.length})
           </Button>
           
           {draws.length < 500 ? (

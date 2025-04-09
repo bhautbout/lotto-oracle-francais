@@ -6,8 +6,9 @@ import { toast } from "@/hooks/use-toast";
 /**
  * Fetches all predictions from the database
  */
-export const fetchPredictionsFromDb = async (limit = 1000): Promise<LotoPrediction[]> => {
+export const fetchPredictionsFromDb = async (limit = 5000): Promise<LotoPrediction[]> => {
   try {
+    console.log(`Récupération des prédictions avec une limite de: ${limit}`);
     const { data, error } = await supabase
       .from('predictions')
       .select('*')
@@ -18,6 +19,8 @@ export const fetchPredictionsFromDb = async (limit = 1000): Promise<LotoPredicti
       console.error("Erreur lors de la récupération des prédictions:", error);
       throw error;
     }
+
+    console.log(`Nombre de prédictions récupérées: ${data?.length || 0}`);
 
     // Convertir les données de Supabase au format LotoPrediction
     return data.map(p => ({

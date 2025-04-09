@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { LotoDraw, LotoPrediction, LotoStats } from "@/types/loto";
 import { toast } from "@/hooks/use-toast";
@@ -8,7 +9,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
   const [predictions, setPredictions] = useState<LotoPrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchPredictions = useCallback(async (limit = 1000) => {
+  const fetchPredictions = useCallback(async (limit = 5000) => {
     try {
       setIsLoading(true);
       const fetchedPredictions = await fetchPredictionsFromDb(limit);
@@ -48,7 +49,7 @@ export const usePredictions = (draws: LotoDraw[], stats: LotoStats | null) => {
         description: `${predictions.length} nouvelles prédictions ont été générées en utilisant ${trainingSize} tirages d'entraînement.`,
       });
 
-      fetchPredictions();
+      fetchPredictions(5000); // Augmentation du nombre de prédictions récupérées par défaut
     } catch (error) {
       console.error("Erreur lors de la génération des prédictions:", error);
       toast({
