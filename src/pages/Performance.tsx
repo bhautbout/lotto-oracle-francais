@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useLotoData } from "@/hooks/useLotoData";
 import { useModelPerformance } from "@/hooks/loto/useModelPerformance";
@@ -47,7 +48,8 @@ const Performance = () => {
       return;
     }
 
-    generatePredictions(selectedMethods.length, selectedMethods);
+    // Fix the call to generatePredictions to match its definition in useLotoData
+    generatePredictions({ count: selectedMethods.length, specificMethods: selectedMethods });
     setShowMethodSelector(false);
     toast({
       title: "Génération en cours",

@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { useDraws } from "./loto/useDraws";
 import { usePredictions } from "./loto/usePredictions";
@@ -7,10 +6,15 @@ import { useStats } from "./loto/useStats";
 import { useRealtimeUpdates } from "./loto/useRealtimeUpdates";
 import { LotoDraw } from "@/types/loto";
 
+// Define a type for the generatePredictions options
+type GeneratePredictionsOptions = {
+  count?: number;
+  specificMethods?: string[];
+};
+
 export const useLotoData = () => {
   const [isLoading, setIsLoading] = useState(false);
   
-  // Hooks extraits pour la gestion des données
   const { 
     draws, 
     fetchDraws, 
@@ -28,9 +32,11 @@ export const useLotoData = () => {
     generatePredictions: generatePredictionsBase
   } = usePredictions(draws, stats);
   
-  // Wrapper for generating predictions that accepts a count
-  const generatePredictions = useCallback((count = 4) => {
-    return generatePredictionsBase(count);
+  // Update the wrapper for generating predictions to accept an options object
+  const generatePredictions = useCallback((options?: GeneratePredictionsOptions) => {
+    const count = options?.count || 4;
+    const specificMethods = options?.specificMethods || [];
+    return generatePredictionsBase(count, specificMethods);
   }, [generatePredictionsBase]);
   
   // Callbacks pour les mises à jour en temps réel
