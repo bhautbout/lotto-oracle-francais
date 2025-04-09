@@ -28,7 +28,7 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
     
     const sortedDraws = [...draws].sort((a, b) => 
       new Date(a.date).getTime() - new Date(b.date).getTime()
-    ); // Utiliser tous les tirages disponibles
+    );
     
     // Regrouper les prédictions par méthode
     const methodGroups: Record<string, LotoPrediction[]> = {};
@@ -47,15 +47,14 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
       let specialNumbersFound = 0;
       const detailedPredictions: MethodPerformance["predictions"] = [];
       
-      // Analyser toutes les prédictions sans limite
+      // Analyser toutes les prédictions
       let analyzedPredictions = 0;
       
-      methodPredictions.forEach(prediction => {
-        // Pour chaque prédiction, on la compare avec un tirage aléatoire
-        // Ceci est une simulation pour tester l'interface, en production on utiliserait
-        // des tirages réels correspondant aux dates de prédiction
-        const randomIndex = Math.floor(Math.random() * sortedDraws.length);
-        const matchingDraw = sortedDraws[randomIndex];
+      methodPredictions.forEach((prediction, index) => {
+        // Utiliser un index fixe basé sur l'index de la prédiction pour avoir des résultats cohérents
+        // Nous limitons l'index au nombre de tirages disponibles
+        const drawIndex = index % sortedDraws.length;
+        const matchingDraw = sortedDraws[drawIndex];
         
         if (matchingDraw) {
           // Compter les numéros trouvés

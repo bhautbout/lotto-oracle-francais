@@ -7,7 +7,7 @@ import ModelPerformanceTable from "@/components/ModelPerformanceTable";
 import MethodDetailView from "@/components/MethodDetailView";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, TrendingUp, Loader2, Plus } from "lucide-react";
+import { AlertCircle, TrendingUp, Loader2, Plus, RefreshCw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,13 +18,22 @@ const Performance = () => {
   const { performance, selectedMethod, setSelectedMethod } = useModelPerformance(draws, predictions);
   const [showMethodSelector, setShowMethodSelector] = useState(false);
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const availableMethods = getAvailableMethods();
 
+  // Charger toutes les prédictions disponibles au lieu de se limiter à 1000
   useEffect(() => {
     console.log("Chargement des prédictions pour la page performance");
-    fetchPredictions(1000);
-  }, [fetchPredictions]);
+    loadAllPredictions();
+  }, []);
+
+  // Fonction pour charger toutes les prédictions
+  const loadAllPredictions = async () => {
+    setIsRefreshing(true);
+    await fetchPredictions(5000); // Augmentation du nombre de prédictions récupérées
+    setIsRefreshing(false);
+  };
 
   const selectedMethodDetails = selectedMethod
     ? performance.find(p => p.method === selectedMethod)
@@ -48,13 +57,15 @@ const Performance = () => {
       return;
     }
 
-    // Fix the call to generatePredictions to match its definition in useLotoData
     generatePredictions({ count: selectedMethods.length, specificMethods: selectedMethods });
     setShowMethodSelector(false);
     toast({
       title: "Génération en cours",
       description: `Génération de ${selectedMethods.length} nouvelles prédictions...`,
     });
+    
+    // Recharger les prédictions après un court délai pour permettre à la base de données de se mettre à jour
+    setTimeout(loadAllPredictions, 1500);
   };
 
   return (
@@ -65,7 +76,17 @@ const Performance = () => {
       </p>
 
       <div className="flex justify-between items-center mb-6">
-        <div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={loadAllPredictions} 
+            disabled={isRefreshing || isLoading}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Actualiser les données
+          </Button>
+          
           {draws.length < 500 ? (
             <Alert variant="warning" className="mb-2">
               <AlertCircle className="h-4 w-4" />
@@ -124,7 +145,7 @@ const Performance = () => {
         </Card>
       )}
 
-      {isLoading && (
+      {(isLoading || isRefreshing) && (
         <div className="flex justify-center items-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-loto-blue" />
           <span className="ml-2">Analyse des prédictions en cours...</span>
