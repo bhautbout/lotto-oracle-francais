@@ -23,22 +23,38 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
   const [previousData, setPreviousData] = useState<{
     drawsCount: number;
     predictionsCount: number;
-  }>({ drawsCount: 0, predictionsCount: 0 });
+    predictionsHash: string;
+  }>({ drawsCount: 0, predictionsCount: 0, predictionsHash: '' });
 
   useEffect(() => {
     if (!draws.length || !predictions.length) return;
 
+    // Créer un hash des IDs de prédictions pour détecter les changements de contenu
+    const predictionsHash = predictions
+      .map(p => p.id)
+      .sort()
+      .join('|');
+    
     // Vérifier si nous avons de nouvelles prédictions ou nouveaux tirages
     const hasNewData = predictions.length !== previousData.predictionsCount || 
-                        draws.length !== previousData.drawsCount;
+                       draws.length !== previousData.drawsCount ||
+                       predictionsHash !== previousData.predictionsHash;
                         
     if (!hasNewData && performance.length > 0) {
       // Si les données n'ont pas changé et nous avons déjà des performances calculées, ne pas recalculer
+      console.log("Aucune nouvelle donnée détectée, conservation de l'analyse de performance existante");
       return;
     }
     
-    console.log(`Analyse de performance avec ${predictions.length} prédictions`);
-    setPreviousData({ drawsCount: draws.length, predictionsCount: predictions.length });
+    console.log(`Analyse de performance avec ${predictions.length} prédictions et ${draws.length} tirages`);
+    console.log(`Nombre précédent de prédictions: ${previousData.predictionsCount}`);
+    
+    // Mise à jour des données précédentes
+    setPreviousData({ 
+      drawsCount: draws.length, 
+      predictionsCount: predictions.length,
+      predictionsHash: predictionsHash
+    });
     
     const sortedDraws = [...draws].sort((a, b) => 
       new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -64,10 +80,10 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
       // Analyser toutes les prédictions
       let analyzedPredictions = 0;
       
-      methodPredictions.forEach((prediction, index) => {
-        // Utiliser un index fixe basé sur l'index de la prédiction pour avoir des résultats cohérents
-        // mais s'assurer que l'index ne dépasse pas la longueur du tableau des tirages
-        if (sortedDraws.length > 0) {
+      // S'assurer que nous avons des tirages avant de continuer
+      if (sortedDraws.length > 0) {
+        methodPredictions.forEach((prediction, index) => {
+          // Utiliser un index fixe basé sur l'index de la prédiction pour avoir des résultats cohérents
           const drawIndex = index % sortedDraws.length;
           const matchingDraw = sortedDraws[drawIndex];
           
@@ -90,8 +106,8 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
               matchedSpecialNumber
             });
           }
-        }
-      });
+        });
+      }
       
       if (analyzedPredictions > 0) {
         performanceData.push({
@@ -112,22 +128,13 @@ export const useModelPerformance = (draws: LotoDraw[], predictions: LotoPredicti
     console.log(`Performance data generated for ${performanceData.length} methods`);
     console.log(`Nombre total de prédictions analysées: ${performanceData.reduce((acc, method) => acc + method.predictions.length, 0)}`);
     
-    // Sauvegarde des anciens totaux
-    const previousTotals = new Map<string, { numbersFound: number, specialNumbersFound: number }>();
-    performance.forEach(p => {
-      previousTotals.set(p.method, { 
-        numbersFound: p.numbersFound, 
-        specialNumbersFound: p.specialNumbersFound 
-      });
-    });
-    
-    // Si nous avions des méthodes sélectionnées, conserver la sélection
+    // Vérifier si la méthode sélectionnée existe toujours
     if (selectedMethod && !performanceData.find(p => p.method === selectedMethod)) {
       setSelectedMethod(null);
     }
     
     setPerformance(performanceData);
-  }, [draws, predictions, previousData.drawsCount, previousData.predictionsCount, performance.length, selectedMethod]);
+  }, [draws, predictions, performance.length, selectedMethod]);
 
   return {
     performance,
